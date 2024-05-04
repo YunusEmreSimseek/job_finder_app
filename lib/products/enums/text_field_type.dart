@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:job_finder_app/products/constants/string_constant.dart';
 import 'package:job_finder_app/products/utilities/extensions/validation_extension.dart';
 
-enum TextFieldType {
+enum AuthTextFieldType {
   email(
     func: TextFieldTypeValids.emailType,
     hintText: StringConstant.email,
@@ -47,7 +47,7 @@ enum TextFieldType {
   final Icon prefixIcon;
   final bool isPassword;
   final TextInputType keyboardType;
-  const TextFieldType(
+  const AuthTextFieldType(
       {required this.func,
       required this.hintText,
       required this.prefixIcon,

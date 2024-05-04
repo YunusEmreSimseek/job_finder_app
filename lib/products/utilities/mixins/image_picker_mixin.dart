@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:job_finder_app/products/services/image/image_service.dart';
 import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
-import 'package:job_finder_app/products/view_models/user_view_model.dart';
 
 mixin ImageMixin<T extends StatefulWidget> on BaseViewMixin<T> {
-  UserViewModel get _loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
+  UserModel get _loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
   IImageService get _imageService => ImageService(user: _loggedInUser);
 
   Future<String?> pickAndUploadImage() async {

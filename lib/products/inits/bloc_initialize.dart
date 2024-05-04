@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:job_finder_app/products/utilities/states/company/company_cubit.dart';
 import 'package:job_finder_app/products/utilities/states/is_obscure/is_obscure_cubit.dart';
 import 'package:job_finder_app/products/utilities/states/loading/loading_cubit.dart';
 import 'package:job_finder_app/products/utilities/states/post/post_cubit.dart';
@@ -13,6 +14,7 @@ final class BlocInitialize extends MultiBlocProvider {
             BlocProvider<IsObscureCubit>(create: (context) => IsObscureCubit()),
             BlocProvider<UserCubit>(create: (context) => UserCubit()),
             BlocProvider<PostCubit>(create: (context) => PostCubit()),
+            BlocProvider<CompanyCubit>(create: (context) => CompanyCubit()),
           ],
         );
 }

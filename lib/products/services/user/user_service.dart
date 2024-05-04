@@ -1,16 +1,24 @@
-import 'package:job_finder_app/products/enums/firebase_collections.dart';
-import 'package:job_finder_app/products/models/user_model.dart';
-import 'package:logger/logger.dart';
+part of 'user_service_manager.dart';
 
 abstract class IUserService {
   Future<UserModel?> getUserById(String id);
   Future<UserModel?> getUserByEmail(String email);
   Future<void> updateUserImage({required String userId, required String imageUrl});
   Future<void> updateUser(UserModel user);
-  final _userReference = FirebaseCollections.user.reference;
 }
 
-final class UserService extends IUserService {
+final class UserService implements IUserService {
+  // Singleton
+  static UserService? _instance;
+  static UserService get instance {
+    _instance ??= UserService._init();
+    return _instance!;
+  }
+
+  UserService._init();
+
+  final _userReference = FirebaseCollections.user.reference;
+
   @override
   Future<UserModel?> getUserById(String id) async {
     final response = await _userReference

@@ -12,6 +12,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
   final String? pricePerHour;
   final bool? isFullTime;
   final List<String>? jobSkills;
+  final List<String>? usersWhoAddedFavourites;
   @override
   final String? id;
 
@@ -26,6 +27,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
     this.pricePerHour,
     this.isFullTime,
     this.jobSkills,
+    this.usersWhoAddedFavourites,
   });
 
   @override
@@ -41,12 +43,52 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
       pricePerHour: json['pricePerHour'] as String,
       isFullTime: json['isFullTime'] as bool,
       jobSkills: (json['jobSkills'] as List?)?.map((e) => e as String).toList(),
+      usersWhoAddedFavourites: (json['usersWhoAddedFavourites'] as List?)?.map((e) => e as String).toList(),
+    );
+  }
+
+  PostModel copyWith({
+    String? id,
+    String? companyId,
+    String? userId,
+    String? title,
+    String? content,
+    DateTime? date,
+    String? location,
+    String? pricePerHour,
+    bool? isFullTime,
+    List<String>? jobSkills,
+    List<String>? usersWhoAddedFavourites,
+  }) {
+    return PostModel(
+      id: id ?? this.id,
+      companyId: companyId ?? this.companyId,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      date: date ?? this.date,
+      location: location ?? this.location,
+      pricePerHour: pricePerHour ?? this.pricePerHour,
+      isFullTime: isFullTime ?? this.isFullTime,
+      jobSkills: jobSkills ?? this.jobSkills,
+      usersWhoAddedFavourites: usersWhoAddedFavourites ?? this.usersWhoAddedFavourites,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, companyId, userId, title, content, date, location, pricePerHour, isFullTime, jobSkills];
+  List<Object?> get props => [
+        id,
+        companyId,
+        userId,
+        title,
+        content,
+        date,
+        location,
+        pricePerHour,
+        isFullTime,
+        jobSkills,
+        usersWhoAddedFavourites
+      ];
 
   @override
   Map<String, dynamic> toJson() {
@@ -61,6 +103,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
       'pricePerHour': pricePerHour,
       'isFullTime': isFullTime,
       'jobSkills': jobSkills,
+      'usersWhoAddedFavourites': usersWhoAddedFavourites,
     };
   }
 }

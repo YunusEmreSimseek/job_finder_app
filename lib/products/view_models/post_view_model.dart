@@ -12,20 +12,23 @@ final class PostViewModel {
   final String? pricePerHour;
   final bool? isFullTime;
   final List<JobSkills>? jobSkills;
+  final List<UserModel?>? usersWhoAddedFavourites;
   final CompanyModel? company;
   final UserModel? user;
 
-  PostViewModel(
-      {required this.id,
-      required this.title,
-      required this.content,
-      required this.date,
-      required this.location,
-      required this.pricePerHour,
-      required this.isFullTime,
-      required this.jobSkills,
-      required this.company,
-      required this.user});
+  PostViewModel({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.date,
+    required this.location,
+    required this.pricePerHour,
+    required this.isFullTime,
+    required this.jobSkills,
+    required this.company,
+    required this.user,
+    required this.usersWhoAddedFavourites,
+  });
 
   PostModel toPostModel() {
     return PostModel(
@@ -39,6 +42,7 @@ final class PostViewModel {
       pricePerHour: pricePerHour,
       isFullTime: isFullTime,
       jobSkills: jobSkills?.map((e) => e.name.toString()).toList(),
+      usersWhoAddedFavourites: usersWhoAddedFavourites?.map((e) => e!.id!).toList(),
     );
   }
 

@@ -2,21 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/base_scaffold/view/base_scaffold_view.dart';
 import 'package:job_finder_app/features/login/view/login_view.dart';
-import 'package:job_finder_app/products/services/auth/auth_service.dart';
-import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
+import 'package:job_finder_app/products/services/auth/auth_service_manager.dart';
 import 'package:job_finder_app/products/utilities/mixins/post_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
 import 'package:kartal/kartal.dart';
 
-mixin LoginMixin on BaseViewMixin<LoginView>, UserMixin<LoginView>, PostMixin<LoginView> {
+mixin LoginMixin on UserMixin<LoginView>, PostMixin<LoginView> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
-  late final IAuthService _authService;
+  late final AuthServiceManager _authServiceManager;
 
   void initControllers() {
     emailController = TextEditingController();
     passwordController = TextEditingController();
-    _authService = AuthService();
   }
 
   void disposeControllers() {
@@ -33,31 +31,33 @@ mixin LoginMixin on BaseViewMixin<LoginView>, UserMixin<LoginView>, PostMixin<Lo
   Future<void> isLoggedIn() async {
     if (FirebaseAuth.instance.currentUser != null) {
       changeLoading();
-      await getLoggedInUser(FirebaseAuth.instance.currentUser!.email!);
+      await getAndSetLoggedInUser(FirebaseAuth.instance.currentUser!.email!);
       await getAllPosts();
       changeLoading();
       navigateToHomeView();
     }
   }
 
-  Future<void> login() async {
-    final response = await _authService.login(email: emailController.text, password: passwordController.text);
+  Future<void> tryLogin() async {
+    final response = await _authServiceManager.login(email: emailController.text, password: passwordController.text);
     if (response) {
       changeLoading();
-      await getLoggedInUser(emailController.text);
+      await getAndSetLoggedInUser(emailController.text);
       await getAllPosts();
       changeLoading();
-      // ignore: use_build_context_synchronously
       navigateToHomeView();
       return;
     }
   }
+
+  void setAllPosts() {}
 
   @override
   void initState() {
     super.initState();
     isLoggedIn();
     initControllers();
+    _authServiceManager = AuthServiceManager(AuthService.instance);
   }
 
   @override

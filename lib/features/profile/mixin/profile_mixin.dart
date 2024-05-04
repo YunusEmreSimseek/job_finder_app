@@ -1,32 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/profile/view/profile_view.dart';
-import 'package:job_finder_app/products/models/company_model.dart';
+import 'package:job_finder_app/products/models/user_model.dart';
+import 'package:job_finder_app/products/services/user/user_service_manager.dart';
+import 'package:job_finder_app/products/utilities/extensions/date_to_string_extension.dart';
 import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/company_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/image_picker_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
-import 'package:job_finder_app/products/view_models/user_view_model.dart';
 
-mixin ProfileMixin
-    on
-        State<ProfileView>,
-        BaseViewMixin<ProfileView>,
-        ImageMixin<ProfileView>,
-        UserMixin<ProfileView>,
-        CompanyMixin<ProfileView> {
+mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageMixin<ProfileView>, UserMixin<ProfileView> {
   late final TextEditingController nameController;
   late final TextEditingController phoneNumberController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
+  late final TextEditingController birthdayController;
   late final GlobalKey<FormState> formKey;
   late final ScrollController scrollController;
-  // late CompanyModel? selectedCompany;
-  List<DropdownMenuItem<CompanyModel>> items = [];
-  UserViewModel get loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
+  DateTime? _selectedDate;
+  UserModel get loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
   late String userImageUrl;
   final ValueNotifier<bool> isProfileChangedNotifier = ValueNotifier<bool>(false);
-  late final ValueNotifier<CompanyModel?> selectedCompany;
+  late final UserServiceManager _userServiceManager;
 
   @override
   void dispose() {
@@ -39,8 +33,31 @@ mixin ProfileMixin
     super.initState();
     initControllers();
     setControllersText();
-    selectedCompany = ValueNotifier<CompanyModel?>(loggedInUser.company);
-    Future.microtask(() async => items = await getAllCompanies() ?? []);
+    _userServiceManager = UserServiceManager(UserService.instance);
+  }
+
+  Future<void> selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      _selectedDate = picked;
+      birthdayController.text = _selectedDate!.toDateString();
+    }
+  }
+
+  void updateBirthdayValue() {
+    if (_selectedDate == null && loggedInUser.birthday != null) {
+      birthdayController.text = loggedInUser.birthday!.toDateString();
+      return;
+    }
+    if (_selectedDate != null && _selectedDate != loggedInUser.birthday) {
+      birthdayController.text = _selectedDate!.toDateString();
+      return;
+    }
   }
 
   void initControllers() {
@@ -48,11 +65,11 @@ mixin ProfileMixin
     passwordController = TextEditingController();
     phoneNumberController = TextEditingController();
     nameController = TextEditingController();
+    birthdayController = TextEditingController();
     scrollController = ScrollController();
     formKey = GlobalKey();
     // updateLoggedInUser();
     userImageUrl = loggedInUser.imageUrl!;
-    //selectedCompany = loggedInUser.company;
   }
 
   // void updateLoggedInUser() {
@@ -60,10 +77,11 @@ mixin ProfileMixin
   // }
 
   void setControllersText() {
-    emailController.text = loggedInUser.email;
-    nameController.text = loggedInUser.name;
-    phoneNumberController.text = loggedInUser.phoneNo!;
-    passwordController.text = loggedInUser.password;
+    emailController.text = loggedInUser.email!;
+    nameController.text = loggedInUser.name!;
+    phoneNumberController.text = loggedInUser.phoneNo ?? '';
+    passwordController.text = loggedInUser.password!;
+    birthdayController.text = loggedInUser.birthday?.toDateString() ?? '';
   }
 
   void disposeControllers() {
@@ -72,20 +90,23 @@ mixin ProfileMixin
     phoneNumberController.dispose();
     scrollController.dispose();
     nameController.dispose();
+    birthdayController.dispose();
   }
 
   void compareUserDetailsWithState() {
     if (loggedInUser.email != emailController.text ||
         loggedInUser.name != nameController.text ||
         loggedInUser.phoneNo != phoneNumberController.text ||
-        loggedInUser.password != passwordController.text) {
+        loggedInUser.password != passwordController.text ||
+        loggedInUser.birthday != _selectedDate) {
       isProfileChangedNotifier.value = true;
       return;
     }
     if (loggedInUser.email == emailController.text &&
         loggedInUser.name == nameController.text &&
         loggedInUser.phoneNo == phoneNumberController.text &&
-        loggedInUser.password == passwordController.text) {
+        loggedInUser.password == passwordController.text &&
+        loggedInUser.birthday == _selectedDate) {
       isProfileChangedNotifier.value = false;
 
       return;
@@ -107,14 +128,14 @@ mixin ProfileMixin
   Future<void> saveChanges() async {
     changeLoading();
     if (formKey.currentState!.validate()) {
-      final convertedUser = loggedInUser.toUserModel();
-      final updatedUser = convertedUser.copyWith(
+      final updatedUser = loggedInUser.copyWith(
         email: emailController.text,
         name: nameController.text,
         phoneNo: phoneNumberController.text,
         password: passwordController.text,
+        birthday: _selectedDate,
       );
-      await updateUser(updatedUser);
+      await _userServiceManager.updateUser(updatedUser);
       if (userImageUrl != loggedInUser.imageUrl! &&
           loggedInUser.imageUrl != null &&
           loggedInUser.imageUrl!.isNotEmpty) {
@@ -122,29 +143,11 @@ mixin ProfileMixin
         await renameNewImage();
         await removeNewImage();
       } else {
-        await updateUserImage(userImageUrl);
-      }
-      if (selectedCompany.value != loggedInUser.company) {
-        final user = updatedUser.copyWith(companyId: selectedCompany.value?.id);
-        await updateUser(user);
+        await tryUpdateUserImage(userImageUrl);
       }
       isProfileChangedNotifier.value = false;
-    }
-    changeLoading();
-  }
 
-  void changeCompany(CompanyModel? value) {
-    if (value != null) {
-      if (loggedInUser.company != value) {
-        selectedCompany.value = value;
-        isProfileChangedNotifier.value = true;
-        return;
-      }
-      if (loggedInUser.company == value) {
-        selectedCompany.value = value;
-        isProfileChangedNotifier.value = false;
-        return;
-      }
+      changeLoading();
     }
   }
 }

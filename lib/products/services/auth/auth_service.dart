@@ -1,19 +1,24 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:job_finder_app/products/enums/firebase_collections.dart';
-import 'package:job_finder_app/products/models/user_model.dart';
-import 'package:logger/logger.dart';
+part of 'auth_service_manager.dart';
 
 abstract class IAuthService {
-  Future<bool> login({required String email, required String password});
+  Future<bool> loginWithEmailAndPassword({required String email, required String password});
   Future<bool> register({required UserModel user});
-  Future<void> addIdIntoUser({required String email});
 }
 
+// AuthRepository
 final class AuthService implements IAuthService {
+  // Singleton
+  static AuthService? _instance;
+  static AuthService get instance {
+    _instance ??= AuthService._init();
+    return _instance!;
+  }
+
+  AuthService._init();
   final _userCollectionReference = FirebaseCollections.user.reference;
 
   @override
-  Future<bool> login({required String email, required String password}) async {
+  Future<bool> loginWithEmailAndPassword({required String email, required String password}) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
 
     if (FirebaseAuth.instance.currentUser != null) {
@@ -39,27 +44,12 @@ final class AuthService implements IAuthService {
       return false;
     }
     Logger().i('Register Firestore Success');
-    await addIdIntoUser(email: user.email!);
+    await _addIdIntoUser(responseFirestore);
     return true;
   }
 
-  @override
-  Future<void> addIdIntoUser({required String email}) async {
-    final response = await _userCollectionReference
-        .where("email", isEqualTo: email)
-        .withConverter(
-          fromFirestore: (snapshot, options) => UserModel().fromFirebase(snapshot),
-          toFirestore: (value, options) {
-            return value.toJson();
-          },
-        )
-        .get();
-    if (response.docs.isNotEmpty) {
-      final user = response.docs.map((e) => e.data()).first;
-      await _userCollectionReference.doc(user.id).update(user.toJson());
-      Logger().i('AddIdIntoUser Success');
-      return;
-    }
-    Logger().e('AddIdIntoUser Failed');
+  Future<void> _addIdIntoUser(DocumentReference docRef) async {
+    await docRef.update({'id': docRef.id});
+    Logger().i('AddIdIntoUser Success');
   }
 }

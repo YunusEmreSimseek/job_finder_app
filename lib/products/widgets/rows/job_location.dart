@@ -8,7 +8,7 @@ final class JobLocation extends Row {
           const Icon(Icons.location_on_outlined),
           context.sized.emptySizedWidthBoxLow,
           SizedBox(
-              width: context.sized.dynamicWidth(.2),
+              width: context.sized.dynamicWidth(.18),
               child: GeneralText(
                 location,
                 context: context,

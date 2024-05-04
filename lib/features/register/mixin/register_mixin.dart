@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/base_scaffold/view/base_scaffold_view.dart';
 import 'package:job_finder_app/features/register/view/register_view.dart';
+import 'package:job_finder_app/products/constants/project_constants.dart';
 import 'package:job_finder_app/products/models/user_model.dart';
-import 'package:job_finder_app/products/services/auth/auth_service.dart';
-import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
+import 'package:job_finder_app/products/services/auth/auth_service_manager.dart';
 import 'package:job_finder_app/products/utilities/mixins/post_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
 import 'package:kartal/kartal.dart';
 
-mixin RegisterMixin on BaseViewMixin<RegisterView>, UserMixin<RegisterView>, PostMixin<RegisterView> {
+mixin RegisterMixin on UserMixin<RegisterView>, PostMixin<RegisterView> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late final TextEditingController passwordConfirmController;
   late final TextEditingController nameController;
   late final GlobalKey<FormState> formKey;
-  late final IAuthService _authService;
+  late final AuthServiceManager _authServiceManager;
 
   @override
   void initState() {
     super.initState();
     initControllers();
+    _authServiceManager = AuthServiceManager(AuthService.instance);
   }
 
   @override
@@ -34,7 +35,6 @@ mixin RegisterMixin on BaseViewMixin<RegisterView>, UserMixin<RegisterView>, Pos
     passwordConfirmController = TextEditingController();
     nameController = TextEditingController();
     formKey = GlobalKey();
-    _authService = AuthService();
   }
 
   void disposeControllers() {
@@ -50,16 +50,17 @@ mixin RegisterMixin on BaseViewMixin<RegisterView>, UserMixin<RegisterView>, Pos
     });
   }
 
-  Future<void> register() async {
+  Future<void> tryRegister() async {
     changeLoading();
     final user = UserModel(
       name: nameController.text,
       email: emailController.text,
       password: passwordController.text,
+      imageUrl: ProjectConstants.defUserPicUrl,
     );
-    final response = await _authService.register(user: user);
+    final response = await _authServiceManager.register(user);
     if (response) {
-      await getLoggedInUser(emailController.text);
+      await getAndSetLoggedInUser(emailController.text);
       await getAllPosts();
       changeLoading();
       navigateToHomeView();

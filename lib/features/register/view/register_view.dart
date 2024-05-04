@@ -42,13 +42,13 @@ class _RegisterViewState extends State<RegisterView>
                     context.sized.emptySizedHeightBoxLow3x,
                     AppBarTitleText(StringConstant.appName, context: context),
                     context.sized.emptySizedHeightBoxLow3x,
-                    FormFieldWithValid(controller: nameController, type: TextFieldType.name),
+                    FormFieldWithValid(controller: nameController, type: AuthTextFieldType.name),
                     context.sized.emptySizedHeightBoxLow,
-                    FormFieldWithValid(controller: emailController, type: TextFieldType.email),
+                    FormFieldWithValid(controller: emailController, type: AuthTextFieldType.email),
                     context.sized.emptySizedHeightBoxLow,
-                    FormFieldWithValid(controller: passwordController, type: TextFieldType.password),
+                    FormFieldWithValid(controller: passwordController, type: AuthTextFieldType.password),
                     context.sized.emptySizedHeightBoxLow,
-                    FormFieldWithValid(controller: passwordConfirmController, type: TextFieldType.confirmPassword),
+                    FormFieldWithValid(controller: passwordConfirmController, type: AuthTextFieldType.confirmPassword),
                     context.sized.emptySizedHeightBoxNormal,
                     AuthQuestionTextContainer(title: StringConstant.registerAlreadyHaveAnAccount, context: context),
                     context.sized.emptySizedHeightBoxLow,
@@ -67,7 +67,7 @@ class _RegisterViewState extends State<RegisterView>
         Expanded(
             child: RegisterButton(
           context: context,
-          onPressed: () async => await register(),
+          onPressed: () async => await tryRegister(),
         )),
         context.sized.emptySizedWidthBoxNormal,
         Expanded(

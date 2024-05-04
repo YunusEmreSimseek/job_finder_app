@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:job_finder_app/products/models/base_firebase_model.dart';
 
@@ -6,14 +7,13 @@ final class UserModel with EquatableMixin, IdModel, BaseFirebaseModel<UserModel>
   final String? email;
   final String? password;
   final String? imageUrl;
-  final String? location;
   final String? phoneNo;
-  final String? companyId;
+  final DateTime? birthday;
+
   @override
   final String? id;
 
-  UserModel(
-      {this.name, this.email, this.password, this.imageUrl, this.location, this.phoneNo, this.companyId, this.id});
+  UserModel({this.name, this.email, this.password, this.imageUrl, this.phoneNo, this.birthday, this.id});
 
   @override
   UserModel fromJson(Map<String, dynamic> json) {
@@ -22,9 +22,8 @@ final class UserModel with EquatableMixin, IdModel, BaseFirebaseModel<UserModel>
       email: json['email'] as String?,
       password: json['password'] as String?,
       imageUrl: json['imageUrl'] as String?,
-      location: json['location'] as String?,
       phoneNo: json['phoneNo'] as String?,
-      companyId: json['companyId'] as String?,
+      birthday: (json['birthday'] as Timestamp?)?.toDate(),
       id: json['id'] as String?,
     );
   }
@@ -36,21 +35,24 @@ final class UserModel with EquatableMixin, IdModel, BaseFirebaseModel<UserModel>
       'email': email,
       'password': password,
       'imageUrl': imageUrl,
-      'location': location,
       'phoneNo': phoneNo,
-      'companyId': companyId,
+      'birthday': birthday,
       'id': id,
     };
   }
+
+  // String? birthdayToString() {
+  //   if (birthday == null) return null;
+  //   return '${birthday!.day}/${birthday!.month}/${birthday!.year}';
+  // }
 
   UserModel copyWith({
     String? name,
     String? email,
     String? password,
     String? imageUrl,
-    String? location,
     String? phoneNo,
-    String? companyId,
+    DateTime? birthday,
     String? id,
   }) {
     return UserModel(
@@ -58,13 +60,12 @@ final class UserModel with EquatableMixin, IdModel, BaseFirebaseModel<UserModel>
       email: email ?? this.email,
       password: password ?? this.password,
       imageUrl: imageUrl ?? this.imageUrl,
-      location: location ?? this.location,
       phoneNo: phoneNo ?? this.phoneNo,
-      companyId: companyId ?? this.companyId,
+      birthday: birthday ?? this.birthday,
       id: id ?? this.id,
     );
   }
 
   @override
-  List<Object?> get props => [name, email, password, imageUrl, location, phoneNo, companyId, id];
+  List<Object?> get props => [name, email, password, imageUrl, phoneNo, birthday, id];
 }

@@ -12,7 +12,6 @@ abstract mixin class BaseFirebaseModel<T extends IdModel> {
     if (value == null) {
       throw Exception('$snapshot data is null');
     }
-    // fixme
     value.addEntries([MapEntry('id', snapshot.id)]);
     return fromJson(value);
   }

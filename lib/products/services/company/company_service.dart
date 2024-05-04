@@ -1,17 +1,24 @@
-import 'package:job_finder_app/products/enums/firebase_collections.dart';
-import 'package:job_finder_app/products/models/company_model.dart';
-import 'package:logger/logger.dart';
+part of 'company_service_manager.dart';
 
 abstract class ICompanyService {
   Future<CompanyModel?> getCompanyById(String companyId);
-  Future<List<CompanyModel>?> getAllCompany();
+  Future<List<CompanyModel>?> getAllCompanies();
 }
 
 final class CompanyService implements ICompanyService {
+// Singleton
+  static CompanyService? _instance;
+  static CompanyService get instance {
+    _instance ??= CompanyService._init();
+    return _instance!;
+  }
+
+  CompanyService._init();
+
   final _companyReference = FirebaseCollections.company.reference;
 
   @override
-  Future<List<CompanyModel>?> getAllCompany() async {
+  Future<List<CompanyModel>?> getAllCompanies() async {
     final response = await _companyReference
         .withConverter(
             fromFirestore: (snapshot, options) => CompanyModel().fromFirebase(snapshot),

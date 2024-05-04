@@ -8,7 +8,11 @@ part 'post_state.dart';
 final class PostCubit extends Cubit<PostState> {
   PostCubit() : super(const PostState());
 
-  void setPosts(List<PostViewModel> posts) {
-    emit(state.copyWith(posts: posts));
+  void setPosts({required List<PostViewModel> posts, required String userId}) {
+    final createdPosts = posts.where((element) => element.user!.id == userId).toList();
+    final favouritesPosts =
+        posts.where((element) => element.usersWhoAddedFavourites?.any((e) => e!.id == userId) ?? false).toList();
+    emit(state.copyWith(
+        posts: posts, createdPosts: createdPosts, favouritesPosts: favouritesPosts, isUpdated: !state.isUpdated));
   }
 }

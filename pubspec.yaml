@@ -15,20 +15,19 @@ dependencies:
     sdk: flutter
 
   # State
-  flutter_bloc: ^8.1.4
+  flutter_bloc: ^8.1.5
 
   #Firebase
-  firebase_core: ^2.27.0
-  firebase_auth: ^4.17.8
-  cloud_firestore: ^4.15.8
-  firebase_storage: ^11.6.9
+  firebase_core: ^2.30.1
+  firebase_auth: ^4.19.4
+  cloud_firestore: ^4.17.2
+  firebase_storage: ^11.7.4
 
   # Utility
-  kartal: ^3.5.0
+  kartal: ^4.0.3
   logger: ^2.0.2+1
   image_picker: ^1.0.7
-  hive: ^2.2.3
-  path_provider: ^2.1.2
+ 
 
 
   # Config

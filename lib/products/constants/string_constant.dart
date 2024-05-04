@@ -10,6 +10,11 @@ final class StringConstant {
   // Register Page
   static const String registerAlreadyHaveAnAccount = 'Already have an account?';
 
+  // Posts Page
+  static const String postsTitle = 'Post Management';
+  static const String postsFavourite = 'Favourite Posts';
+  static const String postMyPosts = 'My Posts';
+
   // General Fields
   static const String email = 'Email';
   static const String password = 'Password';
@@ -22,9 +27,23 @@ final class StringConstant {
   static const String profile = 'Profile';
   static const String search = 'Search';
   static const String settings = 'Settings';
+  static const String posts = 'Posts';
+
+  // Create Post Dialog
+  static const String createPostTitle = 'Create Post';
+
+  // Edit Post Dialog
+  static const String editPostTite = 'Edit Post';
+
+  // Post Text Field Types
+  static const String postCompanyName = 'Company Name';
+  static const String postWorkTitle = 'Work Title';
+  static const String postPricePerHour = 'Price Per Hour';
+  static const String postLocation = 'Location';
+  static const String postContent = 'Content';
 
   // Validation Messages
-  static const String validationEmail = 'Please enter a valid email address';
+  static const String validationEmail = 'Please enter a valid email address ';
   static const String validationPassword = 'Password must be at least 6 characters';
   static const String validationConfirmPassword = 'Passwords do not match';
   static const String validationName = 'Name Surname must be at least 6 characters';

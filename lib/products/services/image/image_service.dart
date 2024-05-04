@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:job_finder_app/products/enums/firebase_storage_paths.dart';
-import 'package:job_finder_app/products/view_models/user_view_model.dart';
+import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:logger/logger.dart';
 
 abstract class IImageService {
@@ -15,8 +15,8 @@ abstract class IImageService {
   Future<void> renameNewImage();
 }
 
-final class ImageService extends IImageService {
-  final UserViewModel user;
+final class ImageService implements IImageService {
+  final UserModel user;
   ImageService({required this.user});
   final ImagePicker _picker = ImagePicker();
 

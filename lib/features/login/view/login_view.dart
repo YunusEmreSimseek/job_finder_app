@@ -40,9 +40,9 @@ class _LoginViewState extends State<LoginView>
               context.sized.emptySizedHeightBoxLow3x,
               AppBarTitleText(StringConstant.appName, context: context),
               context.sized.emptySizedHeightBoxLow3x,
-              LoginFormField(controller: emailController, type: TextFieldType.email),
+              LoginFormField(controller: emailController, type: AuthTextFieldType.email),
               context.sized.emptySizedHeightBoxLow,
-              LoginFormField(controller: passwordController, type: TextFieldType.password),
+              LoginFormField(controller: passwordController, type: AuthTextFieldType.password),
               context.sized.emptySizedHeightBoxNormal,
               _textContainer(context),
               context.sized.emptySizedHeightBoxLow,
@@ -63,7 +63,7 @@ class _LoginViewState extends State<LoginView>
   Row _buttonsRow(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: LoginButton(onPressed: () => login(), context: context)),
+        Expanded(child: LoginButton(onPressed: () => tryLogin(), context: context)),
         context.sized.emptySizedWidthBoxNormal,
         Expanded(
             child: NavigateButton(page: const RegisterView(), context: context, title: StringConstant.registerButton))
