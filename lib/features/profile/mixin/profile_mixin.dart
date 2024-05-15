@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:job_finder_app/features/profile/view/profile_view.dart';
 import 'package:job_finder_app/products/models/user_model.dart';
-import 'package:job_finder_app/products/services/user/user_service_manager.dart';
+import 'package:job_finder_app/products/services/auth/auth_manager.dart';
+import 'package:job_finder_app/products/services/auth/auth_service.dart';
+import 'package:job_finder_app/products/services/user/user_manager.dart';
+import 'package:job_finder_app/products/utilities/enums/firebase_storage_paths.dart';
 import 'package:job_finder_app/products/utilities/extensions/date_to_string_extension.dart';
-import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/image_picker_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/image_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
+import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 
-mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageMixin<ProfileView>, UserMixin<ProfileView> {
+mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTransactionMixin, KeyboardScrollMixin {
   late final TextEditingController nameController;
   late final TextEditingController phoneNumberController;
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late final TextEditingController birthdayController;
   late final GlobalKey<FormState> formKey;
-  late final ScrollController scrollController;
   DateTime? _selectedDate;
   UserModel get loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
-  late String userImageUrl;
+  late final ValueNotifier<XFile?> userImageFile;
   final ValueNotifier<bool> isProfileChangedNotifier = ValueNotifier<bool>(false);
-  late final UserServiceManager _userServiceManager;
+  late final UserManager _userServiceManager;
+  late final AuthManager _authManager;
 
   @override
   void dispose() {
@@ -33,7 +39,9 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageMixin<ProfileView>, UserM
     super.initState();
     initControllers();
     setControllersText();
-    _userServiceManager = UserServiceManager(UserService.instance);
+    _userServiceManager = UserManager(UserService.instance);
+    _authManager = AuthManager(AuthService.instance);
+    userImageFile = ValueNotifier<XFile?>(null);
   }
 
   Future<void> selectDate(BuildContext context) async {
@@ -66,15 +74,8 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageMixin<ProfileView>, UserM
     phoneNumberController = TextEditingController();
     nameController = TextEditingController();
     birthdayController = TextEditingController();
-    scrollController = ScrollController();
     formKey = GlobalKey();
-    // updateLoggedInUser();
-    userImageUrl = loggedInUser.imageUrl!;
   }
-
-  // void updateLoggedInUser() {
-  //   loggedInUser = getCubit<UserCubit>().state.loggedInUser!;
-  // }
 
   void setControllersText() {
     emailController.text = loggedInUser.email!;
@@ -115,39 +116,65 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageMixin<ProfileView>, UserM
 
   Future<void> changeProfilePicture() async {
     changeLoading();
-    final String? responseUrl = await pickAndUploadImage();
-    if (responseUrl != null) {
-      setState(() {
-        userImageUrl = responseUrl;
-        isProfileChangedNotifier.value = true;
-      });
+    final XFile? image = await pickImage();
+    if (image != null) {
+      userImageFile.value = image;
+      isProfileChangedNotifier.value = true;
     }
     changeLoading();
   }
 
   Future<void> saveChanges() async {
     changeLoading();
+    // Check if the user has changed the profile picture only
+    if (userImageFile.value != null &&
+        loggedInUser.name == nameController.text &&
+        loggedInUser.email == emailController.text &&
+        (loggedInUser.phoneNo ?? '') == phoneNumberController.text &&
+        loggedInUser.password == passwordController.text &&
+        loggedInUser.birthday?.toDateString() == birthdayController.text) {
+      await uploadImageAndUpdateUserImage();
+      isProfileChangedNotifier.value = false;
+      changeLoading();
+      safeOperation(() => TextDialog.show(context: context, text: 'Profile updated successfully'));
+      return;
+    }
+    // Check if the user has changed the profile picture and other details
     if (formKey.currentState!.validate()) {
+      // Check if the user has changed the password
+      if (loggedInUser.password != passwordController.text) {
+        await _authManager.changePassword(passwordController.text);
+      }
       final updatedUser = loggedInUser.copyWith(
         email: emailController.text,
         name: nameController.text,
-        phoneNo: phoneNumberController.text,
+        phoneNo: phoneNumberController.text.isEmpty ? null : phoneNumberController.text,
         password: passwordController.text,
         birthday: _selectedDate,
       );
       await _userServiceManager.updateUser(updatedUser);
-      if (userImageUrl != loggedInUser.imageUrl! &&
-          loggedInUser.imageUrl != null &&
-          loggedInUser.imageUrl!.isNotEmpty) {
-        await removeFirstImage();
-        await renameNewImage();
-        await removeNewImage();
-      } else {
-        await tryUpdateUserImage(userImageUrl);
+      if (userImageFile.value != null) {
+        await uploadImageAndUpdateUserImage();
       }
-      isProfileChangedNotifier.value = false;
-
       changeLoading();
+      isProfileChangedNotifier.value = false;
+      safeOperation(() => TextDialog.show(context: context, text: 'Profile updated successfully'));
+      return;
+    }
+    changeLoading();
+  }
+
+  Future<String?> uploadImage() async {
+    final String fileName = '${loggedInUser.email}-${loggedInUser.name}';
+    final String? downloadUrl = await uploadImageToFirebase(
+        file: userImageFile.value!, fileName: fileName, path: FirebaseStoragePaths.user_images);
+    return downloadUrl;
+  }
+
+  Future<void> uploadImageAndUpdateUserImage() async {
+    final String? downloadUrl = await uploadImage();
+    if (downloadUrl != null) {
+      await tryUpdateUserImage(downloadUrl);
     }
   }
 }

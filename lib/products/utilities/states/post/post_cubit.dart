@@ -6,7 +6,13 @@ import 'package:job_finder_app/products/view_models/post_view_model.dart';
 part 'post_state.dart';
 
 final class PostCubit extends Cubit<PostState> {
-  PostCubit() : super(const PostState());
+  static PostCubit? _instance;
+  static PostCubit get instance {
+    _instance ??= PostCubit._init();
+    return _instance!;
+  }
+
+  PostCubit._init() : super(const PostState());
 
   void setPosts({required List<PostViewModel> posts, required String userId}) {
     final createdPosts = posts.where((element) => element.user!.id == userId).toList();

@@ -3,8 +3,8 @@ import 'package:job_finder_app/features/base_scaffold/view/base_scaffold_view.da
 import 'package:job_finder_app/features/home/view/home_view.dart';
 import 'package:job_finder_app/features/posts/view/posts_view.dart';
 import 'package:job_finder_app/features/settings/view/settings_view.dart';
-import 'package:job_finder_app/products/constants/string_constant.dart';
-import 'package:job_finder_app/products/enums/icon_size.dart';
+import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
+import 'package:job_finder_app/products/utilities/enums/icon_size.dart';
 
 mixin BaseScaffoldMixin on State<BaseScaffoldView> {
   final List<Widget> pages = [

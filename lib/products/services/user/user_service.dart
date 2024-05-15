@@ -1,4 +1,4 @@
-part of 'user_service_manager.dart';
+part of 'user_manager.dart';
 
 abstract class IUserService {
   Future<UserModel?> getUserById(String id);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/products/utilities/extensions/month_extension.dart';
-import 'package:job_finder_app/products/widgets/texts/general_text.dart';
+import 'package:job_finder_app/products/widgets/texts/small_text.dart';
 import 'package:kartal/kartal.dart';
 
 final class JobDate extends Row {
@@ -9,7 +9,7 @@ final class JobDate extends Row {
           const Icon(Icons.date_range),
           context.sized.emptySizedWidthBoxLow,
           SizedBox(
-              width: context.sized.dynamicWidth(.15),
-              child: GeneralText('${date.month.toMonth()}, ${date.day}', context: context)),
+              width: context.sized.dynamicWidth(.14),
+              child: SmallText('${date.month.toMonth()},${date.day}', context: context, textAlign: TextAlign.left)),
         ]);
 }

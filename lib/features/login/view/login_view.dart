@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/login/mixin/login_mixin.dart';
 import 'package:job_finder_app/features/register/view/register_view.dart';
-import 'package:job_finder_app/products/constants/string_constant.dart';
-import 'package:job_finder_app/products/enums/text_field_type.dart';
-import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
+import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
+import 'package:job_finder_app/products/utilities/enums/auth_text_field_type.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/post_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/padding/project_padding.dart';
 import 'package:job_finder_app/products/widgets/buttons/login_button.dart';
 import 'package:job_finder_app/products/widgets/buttons/navigate_button.dart';
+import 'package:job_finder_app/products/widgets/core/app_bar_with_title.dart';
+import 'package:job_finder_app/products/widgets/core/app_icon.dart';
+import 'package:job_finder_app/products/widgets/core/app_name_text.dart';
 import 'package:job_finder_app/products/widgets/fields/login_form_field.dart';
-import 'package:job_finder_app/products/widgets/loading/loading_without_child.dart';
-import 'package:job_finder_app/products/widgets/texts/app_bar_title_text.dart';
 import 'package:job_finder_app/products/widgets/texts/general_text.dart';
 import 'package:kartal/kartal.dart';
 
@@ -23,11 +25,18 @@ final class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView>
-    with BaseViewMixin, UserMixin, PostMixin, LoginMixin, KeyboardScrollMixin {
+    with
+        PostTransactionsMixin,
+        BaseViewMixin,
+        UserTransactionMixin,
+        CompanyTransactionsMixin,
+        KeyboardScrollMixin,
+        LoginMixin {
   @override
   Widget build(BuildContext context) {
+    scrollToBottomOnKeyboardOpen(context);
     return Scaffold(
-      appBar: AppBar(actions: const [LoadingWithoutChild()]),
+      appBar: AppBarWithTitle.onlyTitle(context: context, titleText: StringConstant.login),
       body: SingleChildScrollView(
         controller: scrollController,
         child: Padding(
@@ -36,9 +45,9 @@ class _LoginViewState extends State<LoginView>
               child: Column(
             children: [
               context.sized.emptySizedHeightBoxHigh,
-              Icon(Icons.search_outlined, size: 100, color: context.general.colorScheme.primary),
+              const AppIcon(),
               context.sized.emptySizedHeightBoxLow3x,
-              AppBarTitleText(StringConstant.appName, context: context),
+              AppNameText(context: context),
               context.sized.emptySizedHeightBoxLow3x,
               LoginFormField(controller: emailController, type: AuthTextFieldType.email),
               context.sized.emptySizedHeightBoxLow,

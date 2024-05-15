@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/login/view/login_view.dart';
-import 'package:job_finder_app/products/inits/application_initialize.dart';
-import 'package:job_finder_app/products/inits/bloc_initialize.dart';
+import 'package:job_finder_app/products/utilities/inits/application_initialize.dart';
+import 'package:job_finder_app/products/utilities/inits/bloc_initialize.dart';
 import 'package:job_finder_app/products/utilities/theme/project_theme.dart';
 
 Future<void> main() async {

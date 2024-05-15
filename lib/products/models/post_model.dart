@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:job_finder_app/products/models/base_firebase_model.dart';
+import 'package:job_finder_app/products/models/job_applicants_model.dart';
 
 final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel> {
   final String? companyId;
@@ -13,6 +14,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
   final bool? isFullTime;
   final List<String>? jobSkills;
   final List<String>? usersWhoAddedFavourites;
+  final List<JobApplicantsModel>? jobApplicants;
   @override
   final String? id;
 
@@ -28,6 +30,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
     this.isFullTime,
     this.jobSkills,
     this.usersWhoAddedFavourites,
+    this.jobApplicants,
   });
 
   @override
@@ -44,6 +47,9 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
       isFullTime: json['isFullTime'] as bool,
       jobSkills: (json['jobSkills'] as List?)?.map((e) => e as String).toList(),
       usersWhoAddedFavourites: (json['usersWhoAddedFavourites'] as List?)?.map((e) => e as String).toList(),
+      jobApplicants: (json['jobApplicants'] as List?)
+          ?.map((e) => JobApplicantsModel().fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -59,6 +65,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
     bool? isFullTime,
     List<String>? jobSkills,
     List<String>? usersWhoAddedFavourites,
+    List<JobApplicantsModel>? jobApplicants,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -72,6 +79,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
       isFullTime: isFullTime ?? this.isFullTime,
       jobSkills: jobSkills ?? this.jobSkills,
       usersWhoAddedFavourites: usersWhoAddedFavourites ?? this.usersWhoAddedFavourites,
+      jobApplicants: jobApplicants ?? this.jobApplicants,
     );
   }
 
@@ -87,7 +95,8 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
         pricePerHour,
         isFullTime,
         jobSkills,
-        usersWhoAddedFavourites
+        usersWhoAddedFavourites,
+        jobApplicants,
       ];
 
   @override
@@ -104,6 +113,7 @@ final class PostModel with EquatableMixin, IdModel, BaseFirebaseModel<PostModel>
       'isFullTime': isFullTime,
       'jobSkills': jobSkills,
       'usersWhoAddedFavourites': usersWhoAddedFavourites,
+      'jobApplicants': jobApplicants?.map((e) => e.toJson()).toList(),
     };
   }
 }

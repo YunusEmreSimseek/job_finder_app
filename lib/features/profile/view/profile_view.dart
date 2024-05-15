@@ -1,14 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/profile/mixin/profile_mixin.dart';
-import 'package:job_finder_app/products/enums/font_size.dart';
-import 'package:job_finder_app/products/enums/text_field_type.dart';
-import 'package:job_finder_app/products/utilities/mixins/base_view_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/image_picker_mixin.dart';
-import 'package:job_finder_app/products/utilities/mixins/user_mixin.dart';
+import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
+import 'package:job_finder_app/products/utilities/enums/auth_text_field_type.dart';
+import 'package:job_finder_app/products/utilities/enums/font_size.dart';
+import 'package:job_finder_app/products/utilities/enums/icon_size.dart';
+import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/image_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/padding/project_padding.dart';
 import 'package:job_finder_app/products/widgets/buttons/general_button.dart';
+import 'package:job_finder_app/products/widgets/core/app_bar_with_title.dart';
 import 'package:job_finder_app/products/widgets/fields/form_field_with_valid.dart';
-import 'package:job_finder_app/products/widgets/loading/loading_without_child.dart';
+import 'package:job_finder_app/products/widgets/images/user_image_with_radius.dart';
 import 'package:job_finder_app/products/widgets/texts/general_text.dart';
 import 'package:kartal/kartal.dart';
 
@@ -18,13 +25,19 @@ final class ProfileView extends StatefulWidget {
   State<ProfileView> createState() => _ProfileViewState();
 }
 
-class _ProfileViewState extends State<ProfileView> with BaseViewMixin, ImageMixin, UserMixin, ProfileMixin {
+class _ProfileViewState extends State<ProfileView>
+    with
+        PostTransactionsMixin,
+        BaseViewMixin,
+        ImageTransactionsMixin,
+        UserTransactionMixin,
+        KeyboardScrollMixin,
+        ProfileMixin {
   @override
   Widget build(BuildContext context) {
+    scrollToBottomOnKeyboardOpen(context);
     return Scaffold(
-      appBar: AppBar(
-        actions: const [LoadingWithoutChild()],
-      ),
+      appBar: AppBarWithTitle.onlyTitle(context: context, titleText: StringConstant.profile),
       body: SingleChildScrollView(
         controller: scrollController,
         child: Form(
@@ -44,12 +57,6 @@ class _ProfileViewState extends State<ProfileView> with BaseViewMixin, ImageMixi
                   FormFieldWithValid(controller: phoneNumberController, type: AuthTextFieldType.phone),
                   context.sized.emptySizedHeightBoxLow,
                   _birthdayField(context),
-
-                  // _CompanyDropDownButton(
-                  //   selectedCompany: selectedCompany,
-                  //   items: items,
-                  //   changeCompany: (company) => changeCompany(company),
-                  // ),
                   context.sized.emptySizedHeightBoxLow,
                   FormFieldWithValid(controller: emailController, type: AuthTextFieldType.email),
                   context.sized.emptySizedHeightBoxLow,
@@ -68,31 +75,38 @@ class _ProfileViewState extends State<ProfileView> with BaseViewMixin, ImageMixi
   TextFormField _birthdayField(BuildContext context) {
     return TextFormField(
       controller: birthdayController,
-      style: context.general.textTheme.titleMedium?.copyWith(fontSize: FontSize.lowMid.value),
+      style: context.general.textTheme.titleMedium?.copyWith(fontSize: FontSizes.low.value),
       onTap: () async => await selectDate(context),
       onChanged: (value) => updateBirthdayValue(),
       decoration: InputDecoration(
         border: OutlineInputBorder(borderRadius: BorderRadius.all(context.border.normalRadius)),
-        prefixIcon: const Icon(Icons.calendar_today),
+        prefixIcon: Icon(
+          Icons.calendar_today,
+          size: IconSize.low.value,
+        ),
       ),
     );
   }
 
   InkWell _changeProfilePictureButton(BuildContext context) => InkWell(
-      onTap: () async => await changeProfilePicture(), child: GeneralText('Change profile picture', context: context));
+        onTap: () async => await changeProfilePicture(),
+        // child: GeneralText('Change profile picture', context: context),
+        child: GeneralText('Change profile picture', context: context),
+      );
 
   SizedBox _userImage(BuildContext context) {
     return SizedBox(
       height: context.sized.dynamicHeight(.175),
-      child: ClipRRect(
-        borderRadius: BorderRadius.all(context.border.normalRadius),
-        child: Image.network(
-          userImageUrl,
-          errorBuilder: (context, error, stackTrace) => const Icon(Icons.no_photography_outlined),
-          height: context.sized.dynamicHeight(.15),
-          width: context.sized.dynamicWidth(.5),
-          fit: BoxFit.cover,
-        ),
+      width: context.sized.dynamicWidth(.5),
+      child: ValueListenableBuilder(
+        valueListenable: userImageFile,
+        builder: (context, value, child) {
+          if (value != null) {
+            final File file = File(value.path);
+            return UserImageWithRadius.file(file: file, context: context);
+          }
+          return UserImageWithRadius.network(imageUrl: loggedInUser.imageUrl, context: context);
+        },
       ),
     );
   }
@@ -102,7 +116,7 @@ class _ProfileViewState extends State<ProfileView> with BaseViewMixin, ImageMixi
       valueListenable: isProfileChangedNotifier,
       builder: (context, value, child) {
         if (value) {
-          return GeneralButton(onPressed: () => saveChanges(), title: 'Kaydet', context: context);
+          return GeneralButton(onPressed: () => saveChanges(), title: 'Save Changes', context: context);
         }
         if (!value) {
           return const SizedBox.shrink();

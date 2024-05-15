@@ -12,4 +12,8 @@ mixin KeyboardScrollMixin {
       );
     }
   }
+
+  void disposeScrollController() {
+    scrollController.dispose();
+  }
 }

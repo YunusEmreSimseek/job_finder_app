@@ -4,5 +4,7 @@ final class ProjectTheme {
   const ProjectTheme._();
   static ThemeData get light => ThemeData.light().copyWith();
 
-  static ThemeData get dark => ThemeData.dark().copyWith();
+  static ThemeData get dark => ThemeData.dark().copyWith(
+        appBarTheme: const AppBarTheme(centerTitle: true),
+      );
 }

@@ -34,4 +34,4 @@ The only purpose of doing this application is to improve myself.
 
 ### Prewiew
 
-<img src="/assets/screenshots/login.png" height="350"> <img src="/assets/screenshots/register.png" height="350">  <img src="/assets/screenshots/home_1.png" height="350"> <img src="/assets/screenshots/home_search.png" height="350"> <img src="/assets/screenshots/post_detail.png" height="350"> <img src="/assets/screenshots/favorite_posts.png" height="350"> <img src="/assets/screenshots/my_posts.png" height="350"> <img src="/assets/screenshots/create_post.png" height="350">
+<img src="/assets/screenshots/login.png" height="400"> <img src="/assets/screenshots/register.png" height="400">  <img src="/assets/screenshots/home_1.png" height="400"> <img src="/assets/screenshots/home_search.png" height="400"> <img src="/assets/screenshots/post_detail.png" height="400"> <img src="/assets/screenshots/favorite_posts.png" height="400"> <img src="/assets/screenshots/my_posts.png" height="400"> <img src="/assets/screenshots/create_post.png" height="400">

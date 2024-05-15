@@ -1,7 +1,9 @@
-import 'package:job_finder_app/products/enums/job_skills.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:job_finder_app/products/models/company_model.dart';
+import 'package:job_finder_app/products/models/job_applicants_model.dart';
 import 'package:job_finder_app/products/models/post_model.dart';
 import 'package:job_finder_app/products/models/user_model.dart';
+import 'package:job_finder_app/products/utilities/enums/job_skills.dart';
 
 final class PostViewModel {
   final String? id;
@@ -15,6 +17,7 @@ final class PostViewModel {
   final List<UserModel?>? usersWhoAddedFavourites;
   final CompanyModel? company;
   final UserModel? user;
+  final List<JobApplicantsModel>? jobApplicants;
 
   PostViewModel({
     required this.id,
@@ -28,6 +31,7 @@ final class PostViewModel {
     required this.company,
     required this.user,
     required this.usersWhoAddedFavourites,
+    required this.jobApplicants,
   });
 
   PostModel toPostModel() {
@@ -43,6 +47,7 @@ final class PostViewModel {
       isFullTime: isFullTime,
       jobSkills: jobSkills?.map((e) => e.name.toString()).toList(),
       usersWhoAddedFavourites: usersWhoAddedFavourites?.map((e) => e!.id!).toList(),
+      jobApplicants: jobApplicants,
     );
   }
 
@@ -56,4 +61,6 @@ final class PostViewModel {
         return '';
     }
   }
+
+  void fromSnapshot(QueryDocumentSnapshot<Object?> e) {}
 }

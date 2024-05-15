@@ -1,10 +1,11 @@
-part of 'post_service_manager.dart';
+part of 'post_manager.dart';
 
 abstract class IPostService {
   Future<PostModel?> getPostById(String postId);
   Future<List<PostModel>?> getAllPosts();
   Future<bool> createPost(PostModel post);
   Future<void> updatePost(PostModel post);
+  Future<bool> deletePost(String postId);
   Future<List<PostModel>?> getFavouritePostsOfUser(String userId);
   Future<void> addToFavourites({required PostModel post, required String userId});
   Future<void> deleteFromFavourites({required PostModel post, required String userId});
@@ -31,11 +32,11 @@ final class PostService implements IPostService {
         )
         .get();
     if (response.docs.isNotEmpty) {
-      Logger().i('Posts found');
+      Logger().d('Posts found');
       final posts = response.docs.map((e) => e.data()).toList();
       return posts;
     }
-    Logger().i('Posts not found');
+    Logger().e('Posts not found');
     return null;
   }
 
@@ -44,16 +45,16 @@ final class PostService implements IPostService {
     final response = await _postReference
         .where('id', isEqualTo: postId)
         .withConverter(
-          fromFirestore: (snapshot, options) => const PostModel(),
+          fromFirestore: (snapshot, options) => const PostModel().fromFirebase(snapshot),
           toFirestore: (value, options) => value.toJson(),
         )
         .get();
     if (response.docs.isNotEmpty) {
-      Logger().i('Post found');
+      Logger().d('Post found');
       final post = response.docs.map((e) => e.data()).first;
       return post;
     }
-    Logger().i('Post not found');
+    Logger().e('Post not found');
     return null;
   }
 
@@ -72,6 +73,18 @@ final class PostService implements IPostService {
   @override
   Future<void> updatePost(PostModel post) async {
     await _postReference.doc(post.id).update(post.toJson());
+  }
+
+  @override
+  Future<bool> deletePost(String postId) async {
+    try {
+      await _postReference.doc(postId).delete();
+      Logger().d('Post deleted Successfully');
+      return true;
+    } catch (e) {
+      Logger().e('Post delete failed');
+      return false;
+    }
   }
 
   Future<void> _addIdIntoPost(DocumentReference docRef) async {

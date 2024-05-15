@@ -1,8 +1,12 @@
-part of 'company_service_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:job_finder_app/products/models/company_model.dart';
+import 'package:job_finder_app/products/utilities/enums/firebase_collections.dart';
+import 'package:logger/logger.dart';
 
 abstract class ICompanyService {
   Future<CompanyModel?> getCompanyById(String companyId);
   Future<List<CompanyModel>?> getAllCompanies();
+  Future<bool> addCopmany(CompanyModel companyModel);
 }
 
 final class CompanyService implements ICompanyService {
@@ -26,11 +30,11 @@ final class CompanyService implements ICompanyService {
         .get();
 
     if (response.docs.isNotEmpty) {
-      Logger().i('Companies found');
+      Logger().d('Companies found');
       final companies = response.docs.map((e) => e.data()).toList();
       return companies;
     }
-    Logger().i('Companies not found');
+    Logger().e('Companies not found');
     return null;
   }
 
@@ -45,11 +49,27 @@ final class CompanyService implements ICompanyService {
         .get();
 
     if (response.docs.isNotEmpty) {
-      Logger().i('Company found');
+      Logger().d('Company found : ${response.docs.first.data()}');
       final company = response.docs.map((e) => e.data()).first;
       return company;
     }
-    Logger().i('Company not found');
+    Logger().e('Company not found');
     return null;
+  }
+
+  @override
+  Future<bool> addCopmany(CompanyModel companyModel) async {
+    final response = await _companyReference.add(companyModel.toJson());
+    if (response.id.isNotEmpty) {
+      Logger().d('Company added');
+      await _addIdIntoCompany(response);
+      return true;
+    }
+    Logger().e('Company not added');
+    return false;
+  }
+
+  Future<void> _addIdIntoCompany(DocumentReference docRef) async {
+    await docRef.update({'id': docRef.id});
   }
 }

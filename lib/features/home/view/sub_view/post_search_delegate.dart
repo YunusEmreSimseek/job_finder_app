@@ -4,7 +4,8 @@ final class PostSearchDelegate extends SearchDelegate {
   final List<PostViewModel>? posts;
   PostSearchDelegate(this.posts)
       : postsTitles = posts?.map((e) => e.title!).toList(),
-        postsLocations = posts?.map((e) => e.location!).toList();
+        postsLocations = posts?.map((e) => e.location!).toList(),
+        super(searchFieldStyle: TextStyle(fontSize: FontSizes.lowMid.value));
 
   List<String>? postsTitles;
   List<String>? postsLocations;
