@@ -1,6 +1,7 @@
 import 'package:job_finder_app/products/models/job_applicants_model.dart';
 import 'package:job_finder_app/products/models/post_model.dart';
 import 'package:job_finder_app/products/services/post/post_manager.dart';
+import 'package:job_finder_app/products/services/queries/get_user_by_id_query.dart';
 import 'package:job_finder_app/products/services/user/user_manager.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
 import 'package:job_finder_app/products/view_models/job_applicants_view_model.dart';
@@ -11,7 +12,8 @@ mixin JobApplicantsTransactionsMixin {
   late final PostManager postServiceManager = PostManager(PostService.instance);
 
   Future<JobApplicantsViewModel> toJobApplicantsViewModel(JobApplicantsModel jobApplicantsModel) async {
-    final user = await userServiceManager.getUserById(jobApplicantsModel.userId!);
+    final query = GetUserByIdQuery(jobApplicantsModel.userId!);
+    final user = await userServiceManager.getUserById(query);
     if (user == null) throw Exception('User not found');
     return JobApplicantsViewModel(user: user, cvUrl: jobApplicantsModel.cvUrl!);
   }

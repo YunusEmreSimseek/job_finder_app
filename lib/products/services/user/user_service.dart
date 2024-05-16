@@ -1,10 +1,10 @@
 part of 'user_manager.dart';
 
 abstract class IUserService {
-  Future<UserModel?> getUserById(String id);
-  Future<UserModel?> getUserByEmail(String email);
-  Future<void> updateUserImage({required String userId, required String imageUrl});
-  Future<void> updateUser(UserModel user);
+  Future<UserModel?> getUserById(GetUserByIdQuery query);
+  Future<UserModel?> getUserByEmail(GetUserByEmailQuery query);
+  Future<bool> updateUser(UpdateUserCommand command);
+  Future<bool> createUser(CreateUserCommand command);
 }
 
 final class UserService implements IUserService {
@@ -20,53 +20,83 @@ final class UserService implements IUserService {
   final _userReference = FirebaseCollections.user.reference;
 
   @override
-  Future<UserModel?> getUserById(String id) async {
-    final response = await _userReference
-        .where('id', isEqualTo: id)
-        .withConverter(
-          fromFirestore: (snapshot, options) => UserModel().fromFirebase(snapshot),
-          toFirestore: (value, options) => value.toJson(),
-        )
-        .get();
+  Future<bool> createUser(CreateUserCommand command) async {
+    try {
+      final doc = await _userReference.add({
+        'name': command.name,
+        'email': command.email,
+        'password': command.password,
+      });
+      await addIdIntoUser(doc);
+      Logger().i('User service : user created');
+      return true;
+    } catch (e) {
+      Logger().e('User service : user creation failed: $e');
+      return false;
+    }
+  }
 
-    if (response.docs.isNotEmpty) {
-      final user = response.docs.map((e) => e.data()).first;
-      return user;
+  Future<void> addIdIntoUser(DocumentReference docRef) async {
+    await docRef.update({'id': docRef.id});
+    Logger().i('AddIdIntoUser Success');
+  }
+
+  @override
+  Future<bool> updateUser(UpdateUserCommand command) async {
+    try {
+      await _userReference.doc(command.userId).update({
+        'name': command.name,
+        'email': command.email,
+        'password': command.password,
+        'imageUrl': command.imageUrl,
+        'birthday': command.birthDate,
+        'phoneNo': command.phone
+      });
+      Logger().i('User service : user updated');
+      return true;
+    } catch (e) {
+      Logger().e('User service : user update failed: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<UserModel?> getUserById(GetUserByIdQuery query) async {
+    try {
+      final doc = await _userReference
+          .doc(query.userId)
+          .withConverter(
+            fromFirestore: (snapshot, options) => UserModel().fromFirebase(snapshot),
+            toFirestore: (value, options) => value.toJson(),
+          )
+          .get();
+      if (doc.exists) {
+        Logger().d('User Service: User found by id, id: ${query.userId}');
+        return doc.data();
+      }
+    } catch (e) {
+      Logger().e('User Service: Error getting user by id: $e');
     }
     return null;
   }
 
   @override
-  Future<UserModel?> getUserByEmail(String email) async {
-    Logger().i('Getting user by email: $email');
-    final response = await _userReference
-        .where('email', isEqualTo: email)
-        .withConverter(
-          fromFirestore: (snapshot, options) => UserModel().fromFirebase(snapshot),
-          toFirestore: (value, options) => value.toJson(),
-        )
-        .get();
-
-    if (response.docs.isNotEmpty) {
-      final user = response.docs.map((e) => e.data()).first;
-      Logger().i('User found: $user');
-      return user;
+  Future<UserModel?> getUserByEmail(GetUserByEmailQuery query) async {
+    try {
+      final doc = await _userReference
+          .where('email', isEqualTo: query.email)
+          .withConverter(
+            fromFirestore: (snapshot, options) => UserModel().fromFirebase(snapshot),
+            toFirestore: (value, options) => value.toJson(),
+          )
+          .get();
+      if (doc.docs.isNotEmpty) {
+        Logger().d('User Service: User found by email, email: ${query.email}');
+        return doc.docs.first.data();
+      }
+    } catch (e) {
+      Logger().e('User Service: Error getting user by email: $e');
     }
-    Logger().i('User not found');
     return null;
-  }
-
-  @override
-  Future<void> updateUserImage({required String userId, required String imageUrl}) async {
-    await _userReference.doc(userId).update({'imageUrl': imageUrl}).onError((error, stackTrace) {
-      Logger().e('Error updating user image: $error');
-      return;
-    });
-    Logger().i('User image updated');
-  }
-
-  @override
-  Future<void> updateUser(UserModel user) async {
-    await _userReference.doc(user.id).update(user.toJson());
   }
 }

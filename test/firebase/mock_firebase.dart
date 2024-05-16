@@ -1,5 +1,6 @@
 // Firestore servisini soyutlamak için arayüz tanımlayın
 import 'package:job_finder_app/products/models/user_model.dart';
+import 'package:job_finder_app/products/services/queries/get_user_by_id_query.dart';
 import 'package:job_finder_app/products/services/user/user_manager.dart';
 import 'package:mockito/mockito.dart';
 import 'package:vexana/vexana.dart';
@@ -24,7 +25,7 @@ import 'package:vexana/vexana.dart';
 
 final class MockFirebaseService extends Mock implements IUserService {
   @override
-  Future<UserModel?> getUserById(String userId) async {
+  Future<UserModel?> getUserById(GetUserByIdQuery query) async {
     return UserModel(
         id: '1',
         name: 'John Doe',

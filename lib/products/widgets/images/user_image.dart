@@ -11,7 +11,7 @@ class UserImage extends Image {
             Icons.no_photography_outlined,
             size: IconSize.high.value,
           ),
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
         );
 
   UserImage.file({super.key, required File file, required BuildContext context})
@@ -21,6 +21,6 @@ class UserImage extends Image {
             Icons.no_photography_outlined,
             size: IconSize.high.value,
           ),
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
         );
 }

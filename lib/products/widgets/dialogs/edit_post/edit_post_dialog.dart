@@ -4,6 +4,7 @@ import 'package:job_finder_app/products/utilities/constants/string_constant.dart
 import 'package:job_finder_app/products/utilities/enums/create_ad_text_field_type.dart';
 import 'package:job_finder_app/products/utilities/enums/job_skills.dart';
 import 'package:job_finder_app/products/utilities/enums/work_styles.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/post_dialog_mixin.dart';
@@ -34,7 +35,7 @@ final class EditPostDialog extends StatefulWidget {
 }
 
 class _EditPostDialogState extends State<EditPostDialog>
-    with PostTransactionsMixin, BaseViewMixin, PostDialogMixin, EditPostDialogMixin {
+    with PostTransactionsMixin, BaseViewMixin, PostDialogMixin, NotificationMixin, EditPostDialogMixin {
   @override
   Widget build(BuildContext context) {
     return PostDialog(

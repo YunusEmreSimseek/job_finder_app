@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:job_finder_app/products/models/post_model.dart';
 import 'package:job_finder_app/products/utilities/enums/job_skills.dart';
 import 'package:job_finder_app/products/utilities/enums/work_styles.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/post_dialog_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
 import 'package:job_finder_app/products/widgets/dialogs/edit_post/edit_post_dialog.dart';
-import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 import 'package:logger/logger.dart';
 
-mixin EditPostDialogMixin on PostDialogMixin<EditPostDialog> {
+mixin EditPostDialogMixin on PostDialogMixin<EditPostDialog>, NotificationMixin<EditPostDialog> {
   @override
   void initState() {
     super.initState();
@@ -35,6 +35,7 @@ mixin EditPostDialogMixin on PostDialogMixin<EditPostDialog> {
       id: oldPost.id,
       date: oldPost.date,
       usersWhoAddedFavourites: oldPost.usersWhoAddedFavourites,
+      jobApplicants: oldPost.jobApplicants,
       companyId: selectedCompany!.id,
       content: contentController.text,
       isFullTime: selectedWorkStyle == WorkStyles.FullTime,
@@ -46,11 +47,11 @@ mixin EditPostDialogMixin on PostDialogMixin<EditPostDialog> {
     );
     if (oldPost == newPost) {
       Logger().i('No changes');
-      safeOperation(() async => await TextDialog.show(context: context, text: 'No changes'));
+      showTextDialog('No changes');
       return;
     }
     await updatePost(newPost);
-    safeOperation(() async => await TextDialog.show(context: context, text: 'Post has been updated'));
+    showTextDialog('Post has been updated');
     Logger().i('Post has been updated');
   }
 }

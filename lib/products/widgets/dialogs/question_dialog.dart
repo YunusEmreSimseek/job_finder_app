@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/products/widgets/dialogs/base_dialog.dart';
+import 'package:job_finder_app/products/widgets/texts/general_button_text.dart';
+import 'package:job_finder_app/products/widgets/texts/general_text.dart';
 
 final class QuestionDialog extends StatelessWidget {
   const QuestionDialog({super.key, required this.question});
@@ -19,15 +21,21 @@ final class QuestionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(question),
+      title: GeneralText(
+        question,
+        context: context,
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('No'),
+          child: GeneralButtonText(
+            'No',
+            context: context,
+          ),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Yes'),
+          child: GeneralButtonText('Yes', context: context),
         ),
       ],
     );

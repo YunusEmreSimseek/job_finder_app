@@ -4,6 +4,7 @@ import 'package:job_finder_app/features/job_detail/mixin/job_detail_mixin.dart';
 import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
 import 'package:job_finder_app/products/utilities/enums/icon_size.dart';
 import 'package:job_finder_app/products/utilities/enums/job_skills.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/padding/project_padding.dart';
@@ -29,7 +30,8 @@ final class JobDetailView extends StatefulWidget {
   State<JobDetailView> createState() => _JobDetailViewState();
 }
 
-class _JobDetailViewState extends State<JobDetailView> with PostTransactionsMixin, BaseViewMixin, JobDetailMixin {
+class _JobDetailViewState extends State<JobDetailView>
+    with PostTransactionsMixin, BaseViewMixin, NotificationMixin, JobDetailMixin {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PostCubit, PostState>(

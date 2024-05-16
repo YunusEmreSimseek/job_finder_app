@@ -4,17 +4,23 @@ import 'package:job_finder_app/features/profile/view/profile_view.dart';
 import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:job_finder_app/products/services/auth/auth_manager.dart';
 import 'package:job_finder_app/products/services/auth/auth_service.dart';
-import 'package:job_finder_app/products/services/user/user_manager.dart';
+import 'package:job_finder_app/products/services/commands/update_user_command.dart';
 import 'package:job_finder_app/products/utilities/enums/firebase_storage_paths.dart';
 import 'package:job_finder_app/products/utilities/extensions/date_to_string_extension.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/image_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
-import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 
-mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTransactionMixin, KeyboardScrollMixin {
+mixin ProfileMixin
+    on
+        BaseViewMixin<ProfileView>,
+        ImageTransactionsMixin,
+        UserTransactionMixin,
+        KeyboardScrollMixin,
+        NotificationMixin<ProfileView> {
   late final TextEditingController nameController;
   late final TextEditingController phoneNumberController;
   late final TextEditingController emailController;
@@ -25,7 +31,6 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTr
   UserModel get loggedInUser => getCubit<UserCubit>().state.loggedInUser!;
   late final ValueNotifier<XFile?> userImageFile;
   final ValueNotifier<bool> isProfileChangedNotifier = ValueNotifier<bool>(false);
-  late final UserManager _userServiceManager;
   late final AuthManager _authManager;
 
   @override
@@ -39,7 +44,6 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTr
     super.initState();
     initControllers();
     setControllersText();
-    _userServiceManager = UserManager(UserService.instance);
     _authManager = AuthManager(AuthService.instance);
     userImageFile = ValueNotifier<XFile?>(null);
   }
@@ -83,6 +87,7 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTr
     phoneNumberController.text = loggedInUser.phoneNo ?? '';
     passwordController.text = loggedInUser.password!;
     birthdayController.text = loggedInUser.birthday?.toDateString() ?? '';
+    _selectedDate = loggedInUser.birthday;
   }
 
   void disposeControllers() {
@@ -126,39 +131,63 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTr
 
   Future<void> saveChanges() async {
     changeLoading();
-    // Check if the user has changed the profile picture only
-    if (userImageFile.value != null &&
-        loggedInUser.name == nameController.text &&
-        loggedInUser.email == emailController.text &&
-        (loggedInUser.phoneNo ?? '') == phoneNumberController.text &&
-        loggedInUser.password == passwordController.text &&
-        loggedInUser.birthday?.toDateString() == birthdayController.text) {
-      await uploadImageAndUpdateUserImage();
-      isProfileChangedNotifier.value = false;
+    final isNameChanged = loggedInUser.name != nameController.text;
+    final isEmailChanged = loggedInUser.email != emailController.text;
+    final isPhoneNoChanged = loggedInUser.phoneNo != phoneNumberController.text;
+    final isPasswordChanged = loggedInUser.password != passwordController.text;
+    final isBirthdayChanged = loggedInUser.birthday != _selectedDate;
+    final isImageChanged = userImageFile.value != null;
+
+    if (isImageChanged &&
+        !isBirthdayChanged &&
+        !isPasswordChanged &&
+        !isPhoneNoChanged &&
+        !isEmailChanged &&
+        !isNameChanged) {
+      final response = await uploadImageAndUpdateUser();
+      if (!response) {
+        changeLoading();
+        showTextDialog('An error occurred while updating the profile');
+        return;
+      }
+      await getAndSetLoggedInUser(emailController.text);
       changeLoading();
-      safeOperation(() => TextDialog.show(context: context, text: 'Profile updated successfully'));
+      isProfileChangedNotifier.value = false;
+      showTextDialog('Profile updated successfully');
       return;
     }
     // Check if the user has changed the profile picture and other details
     if (formKey.currentState!.validate()) {
-      // Check if the user has changed the password
-      if (loggedInUser.password != passwordController.text) {
-        await _authManager.changePassword(passwordController.text);
+      String? url;
+      if (isImageChanged) {
+        final downloadUrl = await uploadImage();
+        if (downloadUrl != null) {
+          url = downloadUrl;
+        }
       }
-      final updatedUser = loggedInUser.copyWith(
+      final UpdateUserCommand updateUserCommand = UpdateUserCommand(
+        userId: loggedInUser.id!,
         email: emailController.text,
         name: nameController.text,
-        phoneNo: phoneNumberController.text.isEmpty ? null : phoneNumberController.text,
+        phone: phoneNumberController.text.isEmpty ? null : phoneNumberController.text,
         password: passwordController.text,
-        birthday: _selectedDate,
+        imageUrl: url ?? loggedInUser.imageUrl,
+        birthDate: _selectedDate,
       );
-      await _userServiceManager.updateUser(updatedUser);
-      if (userImageFile.value != null) {
-        await uploadImageAndUpdateUserImage();
+      // Check if the user has changed the password
+      if (isPasswordChanged) {
+        await _authManager.changePassword(passwordController.text);
       }
+      final response = await updateUser(updateUserCommand);
+      if (!response) {
+        changeLoading();
+        showTextDialog('An error occurred while updating the profile');
+        return;
+      }
+      await getAndSetLoggedInUser(emailController.text);
       changeLoading();
       isProfileChangedNotifier.value = false;
-      safeOperation(() => TextDialog.show(context: context, text: 'Profile updated successfully'));
+      showTextDialog('Profile updated successfully');
       return;
     }
     changeLoading();
@@ -171,10 +200,21 @@ mixin ProfileMixin on BaseViewMixin<ProfileView>, ImageTransactionsMixin, UserTr
     return downloadUrl;
   }
 
-  Future<void> uploadImageAndUpdateUserImage() async {
+  Future<bool> uploadImageAndUpdateUser() async {
     final String? downloadUrl = await uploadImage();
     if (downloadUrl != null) {
-      await tryUpdateUserImage(downloadUrl);
+      final UpdateUserCommand updateUserCommand = UpdateUserCommand(
+        userId: loggedInUser.id!,
+        email: emailController.text,
+        name: nameController.text,
+        phone: phoneNumberController.text.isEmpty ? null : phoneNumberController.text,
+        password: passwordController.text,
+        imageUrl: downloadUrl,
+        birthDate: _selectedDate,
+      );
+      final response = await updateUser(updateUserCommand);
+      return response;
     }
+    return false;
   }
 }

@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:job_finder_app/products/models/user_model.dart';
-import 'package:job_finder_app/products/utilities/enums/firebase_collections.dart';
+import 'package:job_finder_app/products/services/commands/create_user_command.dart';
 import 'package:logger/logger.dart';
 
 abstract class IAuthService {
   Future<bool> loginWithEmailAndPassword({required String email, required String password});
-  Future<bool> register({required UserModel user});
+  Future<bool> register(CreateUserCommand command);
   Future<bool> changePassword(String newPassword);
 }
 
@@ -20,7 +19,7 @@ final class AuthService implements IAuthService {
   }
 
   AuthService._init();
-  final _userCollectionReference = FirebaseCollections.user.reference;
+  // final _userCollectionReference = FirebaseCollections.user.reference;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
@@ -36,22 +35,30 @@ final class AuthService implements IAuthService {
   }
 
   @override
-  Future<bool> register({required UserModel user}) async {
-    final responseAuth =
-        await _firebaseAuth.createUserWithEmailAndPassword(email: user.email!, password: user.password!);
-    if (responseAuth.user == null) {
-      Logger().e('Register FirebaseAuth Failed');
+  Future<bool> register(CreateUserCommand command) async {
+    try {
+      await _firebaseAuth.createUserWithEmailAndPassword(email: command.email, password: command.password);
+      Logger().d('Auth Service : Register Success');
+      return true;
+    } catch (e) {
+      Logger().e('Auth Service : Register Failed: $e');
       return false;
     }
-    Logger().d('Register FirebaseAuth Success');
-    final responseFirestore = await _userCollectionReference.add(user.toJson());
-    if (responseFirestore.id.isEmpty) {
-      Logger().e('Register Firestore Failed');
-      return false;
-    }
-    Logger().i('Register Firestore Success');
-    await addIdIntoUser(responseFirestore);
-    return true;
+    // final responseAuth =
+    //     await _firebaseAuth.createUserWithEmailAndPassword(email: user.email!, password: user.password!);
+    // if (responseAuth.user == null) {
+    //   Logger().e('Register FirebaseAuth Failed');
+    //   return false;
+    // }
+    // Logger().d('Register FirebaseAuth Success');
+    // final responseFirestore = await _userCollectionReference.add(user.toJson());
+    // if (responseFirestore.id.isEmpty) {
+    //   Logger().e('Register Firestore Failed');
+    //   return false;
+    // }
+    // Logger().i('Register Firestore Success');
+    // await addIdIntoUser(responseFirestore);
+    // return true;
   }
 
   @override

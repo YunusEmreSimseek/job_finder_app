@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/base_scaffold/view/base_scaffold_view.dart';
 import 'package:job_finder_app/features/register/view/register_view.dart';
-import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:job_finder_app/products/services/auth/auth_manager.dart';
 import 'package:job_finder_app/products/services/auth/auth_service.dart';
+import 'package:job_finder_app/products/services/commands/create_user_command.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
-import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 import 'package:kartal/kartal.dart';
 
 mixin RegisterMixin
@@ -18,7 +18,8 @@ mixin RegisterMixin
         UserTransactionMixin,
         PostTransactionsMixin,
         CompanyTransactionsMixin,
-        KeyboardScrollMixin {
+        KeyboardScrollMixin,
+        NotificationMixin<RegisterView> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late final TextEditingController passwordConfirmController;
@@ -66,17 +67,21 @@ mixin RegisterMixin
       final isContain = await checkEmailUsing(emailController.text);
       if (isContain) {
         changeLoading();
-        await safeOperation(() async => await TextDialog.show(context: context, text: 'This email is already in use'));
+        showTextDialog('This email is already in use');
         emailController.clear();
         return;
       }
-      final user = UserModel(
-        name: nameController.text,
-        email: emailController.text,
-        password: passwordController.text,
-      );
-      final response = await _authServiceManager.register(user);
-      if (response) {
+
+      final createUserCommand =
+          CreateUserCommand(name: nameController.text, email: emailController.text, password: passwordController.text);
+      final responseAuthService = await _authServiceManager.register(createUserCommand);
+      if (!responseAuthService) {
+        changeLoading();
+        showTextDialog('Register failed');
+        return;
+      }
+      final responseUserService = await createUser(createUserCommand);
+      if (responseUserService) {
         await getAndSetLoggedInUser(emailController.text);
         await getAndSetCompanies();
         await getAllPostsAndConvertToViewModel();

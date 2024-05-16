@@ -7,12 +7,12 @@ import 'package:job_finder_app/products/services/firebase/firebase_storage_manag
 import 'package:job_finder_app/products/services/firebase/firebase_storage_service.dart';
 import 'package:job_finder_app/products/services/post/post_manager.dart';
 import 'package:job_finder_app/products/utilities/enums/firebase_storage_paths.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
 import 'package:job_finder_app/products/utilities/states/user/user_cubit.dart';
-import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 import 'package:logger/logger.dart';
 
-mixin JobDetailMixin on BaseViewMixin<JobDetailView> {
+mixin JobDetailMixin on BaseViewMixin<JobDetailView>, NotificationMixin<JobDetailView> {
   late final FilePickerManager _filePickerManager;
   late final FirebaseStorageManager _firebaseStorageManager;
   late final PostManager _postServiceManager;
@@ -39,7 +39,7 @@ mixin JobDetailMixin on BaseViewMixin<JobDetailView> {
     if (isContain) {
       Logger().i('Already applied');
       changeLoading();
-      safeOperation(() => TextDialog.show(context: context, text: 'You have already applied to this job'));
+      showTextDialog('You have already applied to this job');
       return;
     }
     final result = await pickItem();
@@ -49,12 +49,12 @@ mixin JobDetailMixin on BaseViewMixin<JobDetailView> {
         Logger().i('File uploaded');
         await updateJobApplicantsOfPost(cvUrl);
         changeLoading();
-        safeOperation(() => TextDialog.show(context: context, text: 'You have successfully applied to this job'));
+        showTextDialog('You have successfully applied to this job');
         return;
       }
       Logger().e('File not uploaded');
       changeLoading();
-      safeOperation(() => TextDialog.show(context: context, text: 'File can not uploaded'));
+      showTextDialog('File can not uploaded');
 
       return;
     }

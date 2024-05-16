@@ -1,6 +1,7 @@
 import 'package:job_finder_app/products/models/post_model.dart';
 import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:job_finder_app/products/services/post/post_manager.dart';
+import 'package:job_finder_app/products/services/queries/get_user_by_id_query.dart';
 import 'package:job_finder_app/products/services/user/user_manager.dart';
 import 'package:job_finder_app/products/utilities/enums/job_skills.dart';
 import 'package:job_finder_app/products/utilities/states/company/company_cubit.dart';
@@ -24,7 +25,8 @@ mixin PostTransactionsMixin {
 
   Future<List<UserModel?>?> getUsersWhoAddedFavourites(List<String>? userIds) async {
     if (userIds == null) return null;
-    final users = await Future.wait(userIds.map((e) async => await _userServiceManager.getUserById(e)).toList());
+    final queries = userIds.map((e) => GetUserByIdQuery(e)).toList();
+    final users = await Future.wait(queries.map((e) async => await _userServiceManager.getUserById(e)).toList());
     if (users.isEmpty) return null;
     return users;
   }
@@ -32,7 +34,8 @@ mixin PostTransactionsMixin {
   Future<PostViewModel> toPostViewModel(PostModel post) async {
     final companies = CompanyCubit.instance.state.companies;
     final company = companies?.firstWhere((element) => element.id == post.companyId);
-    final user = await _userServiceManager.getUserById(post.userId!);
+    final query = GetUserByIdQuery(post.userId!);
+    final user = await _userServiceManager.getUserById(query);
     final usersWhoAddedFavourites = await getUsersWhoAddedFavourites(post.usersWhoAddedFavourites);
 
     return PostViewModel(

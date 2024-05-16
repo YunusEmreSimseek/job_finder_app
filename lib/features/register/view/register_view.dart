@@ -4,6 +4,7 @@ import 'package:job_finder_app/features/register/mixin/register_mixin.dart';
 import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
 import 'package:job_finder_app/products/utilities/enums/auth_text_field_type.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
@@ -32,6 +33,7 @@ class _RegisterViewState extends State<RegisterView>
         UserTransactionMixin,
         CompanyTransactionsMixin,
         KeyboardScrollMixin,
+        NotificationMixin,
         RegisterMixin {
   @override
   Widget build(BuildContext context) {

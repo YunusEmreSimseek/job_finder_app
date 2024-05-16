@@ -5,11 +5,11 @@ import 'package:job_finder_app/features/login/view/login_view.dart';
 import 'package:job_finder_app/products/services/auth/auth_manager.dart';
 import 'package:job_finder_app/products/services/auth/auth_service.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/views/base_view_mixin.dart';
-import 'package:job_finder_app/products/widgets/dialogs/text_dialog.dart';
 import 'package:kartal/kartal.dart';
 
 mixin LoginMixin
@@ -18,7 +18,8 @@ mixin LoginMixin
         UserTransactionMixin,
         PostTransactionsMixin,
         CompanyTransactionsMixin,
-        KeyboardScrollMixin {
+        KeyboardScrollMixin,
+        NotificationMixin<LoginView> {
   late final TextEditingController emailController;
   late final TextEditingController passwordController;
   late final AuthManager _authServiceManager;
@@ -62,7 +63,7 @@ mixin LoginMixin
       return;
     }
     changeLoading();
-    await safeOperation(() => TextDialog.show(context: context, text: 'Please check your email and password'));
+    showTextDialog('Please check your email and password');
   }
 
   @override

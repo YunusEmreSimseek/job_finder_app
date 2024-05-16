@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:job_finder_app/features/job_detail/view/job_detail_view.dart';
 import 'package:job_finder_app/features/posts/view/posts_view.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/job_applicants_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
@@ -14,7 +15,12 @@ import 'package:job_finder_app/products/widgets/dialogs/question_dialog.dart';
 import 'package:kartal/kartal.dart';
 
 mixin PostsMixin
-    on BaseViewMixin<PostsView>, JobApplicantsTransactionsMixin, CompanyTransactionsMixin, PostTransactionsMixin {
+    on
+        BaseViewMixin<PostsView>,
+        JobApplicantsTransactionsMixin,
+        CompanyTransactionsMixin,
+        PostTransactionsMixin,
+        NotificationMixin<PostsView> {
   late final ValueNotifier<bool> isCreatedPosts;
 
   @override
@@ -67,6 +73,7 @@ mixin PostsMixin
       await QuestionDialog.show(context: context, question: 'Are you sure you want to delete this post?');
 
   Future<void> removePost(String postId) async {
+    changeLoading();
     final response = await postServiceManager.deletePost(postId);
     if (!response) return;
     final posts = getCubit<PostCubit>().state.posts;
@@ -74,6 +81,8 @@ mixin PostsMixin
       posts.removeWhere((element) => element.id == postId);
       getCubit<PostCubit>().setPosts(posts: posts, userId: getCubit<UserCubit>().state.loggedInUser!.id!);
     }
+    changeLoading();
+    showTextDialog('Post has been deleted');
   }
 
   Future<void> onPageRefreshed() {

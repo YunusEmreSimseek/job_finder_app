@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:job_finder_app/products/services/cache/cache_service.dart';
 import 'package:job_finder_app/products/services/image/download_image_service.dart';
+import 'package:job_finder_app/products/services/queries/get_user_by_id_query.dart';
 import 'package:job_finder_app/products/services/user/user_manager.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:vexana/vexana.dart';
@@ -24,7 +25,8 @@ void main() {
     PathProviderPlatform.instance = MockPathProviderPlatform();
   });
   test('Sample Test', () async {
-    final response = await userServiceManager.getUserById('1');
+    final query = GetUserByIdQuery('1');
+    final response = await userServiceManager.getUserById(query);
     expect(response, isNotNull);
   });
 
@@ -34,7 +36,8 @@ void main() {
   });
 
   test('Fetch Data And Create File With Data', () async {
-    final response = await userServiceManager.getUserById('1');
+    final query = GetUserByIdQuery('1');
+    final response = await userServiceManager.getUserById(query);
     final path = await cacheManager.createDocumentsPath('images');
     final userImageDirectory = await Directory('${path.path}/${response?.id}').create(recursive: true);
     final file = File('${userImageDirectory.path}/user.png');

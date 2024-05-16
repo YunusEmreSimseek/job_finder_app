@@ -10,9 +10,9 @@ final class SettingsItemProfileButton extends InkWell {
             onTap: () => context.route.navigateToPage(const ProfileView()),
             child: SizedBox(
               height: context.sized.dynamicHeight(.125),
-              child: SettingsItemCard(
+              child: SettingsItemCard.withImage(
                 context: context,
-                imageUrl: imageUrl,
+                imageUrl: imageUrl ?? '',
                 title: title,
               ),
             ));

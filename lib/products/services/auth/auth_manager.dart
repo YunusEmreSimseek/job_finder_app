@@ -1,5 +1,5 @@
-import 'package:job_finder_app/products/models/user_model.dart';
 import 'package:job_finder_app/products/services/auth/auth_service.dart';
+import 'package:job_finder_app/products/services/commands/create_user_command.dart';
 
 final class AuthManager {
   late final IAuthService _authService;
@@ -11,8 +11,8 @@ final class AuthManager {
     return response;
   }
 
-  Future<bool> register(UserModel user) async {
-    final response = await _authService.register(user: user);
+  Future<bool> register(CreateUserCommand command) async {
+    final response = await _authService.register(command);
     return response;
   }
 

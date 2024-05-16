@@ -7,6 +7,7 @@ import 'package:job_finder_app/products/utilities/enums/auth_text_field_type.dar
 import 'package:job_finder_app/products/utilities/enums/font_size.dart';
 import 'package:job_finder_app/products/utilities/enums/icon_size.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/image_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
@@ -32,6 +33,7 @@ class _ProfileViewState extends State<ProfileView>
         ImageTransactionsMixin,
         UserTransactionMixin,
         KeyboardScrollMixin,
+        NotificationMixin,
         ProfileMixin {
   @override
   Widget build(BuildContext context) {
@@ -96,8 +98,7 @@ class _ProfileViewState extends State<ProfileView>
 
   SizedBox _userImage(BuildContext context) {
     return SizedBox(
-      height: context.sized.dynamicHeight(.175),
-      width: context.sized.dynamicWidth(.5),
+      height: context.sized.dynamicHeight(.2),
       child: ValueListenableBuilder(
         valueListenable: userImageFile,
         builder: (context, value, child) {

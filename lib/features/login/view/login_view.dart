@@ -4,6 +4,7 @@ import 'package:job_finder_app/features/register/view/register_view.dart';
 import 'package:job_finder_app/products/utilities/constants/string_constant.dart';
 import 'package:job_finder_app/products/utilities/enums/auth_text_field_type.dart';
 import 'package:job_finder_app/products/utilities/mixins/keyboard_scroll_mixin.dart';
+import 'package:job_finder_app/products/utilities/mixins/notification_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/company_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/post_transactions_mixin.dart';
 import 'package:job_finder_app/products/utilities/mixins/transactions/user_transactions_mixin.dart';
@@ -31,6 +32,7 @@ class _LoginViewState extends State<LoginView>
         UserTransactionMixin,
         CompanyTransactionsMixin,
         KeyboardScrollMixin,
+        NotificationMixin,
         LoginMixin {
   @override
   Widget build(BuildContext context) {
